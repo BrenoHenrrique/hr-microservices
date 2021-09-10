@@ -10,8 +10,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 public class HrOauthApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(HrOauthApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(HrOauthApplication.class, args);
+	}
 
 }

@@ -1,5 +1,6 @@
 package com.example.hroauth.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,36 +16,43 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
-    private final BCryptPasswordEncoder passwordEncoder;
-    private final JwtAccessTokenConverter accessTokenConverter;
-    private final JwtTokenStore tokenStore;
-    private final AuthenticationManager authenticationManager;
+	@Value("${oauth.client.name}")
+	private String clientName;
 
-    public AuthorizationServerConfig(BCryptPasswordEncoder passwordEncoder, JwtAccessTokenConverter accessTokenConverter, JwtTokenStore tokenStore, AuthenticationManager authenticationManager) {
-        super();
-        this.passwordEncoder = passwordEncoder;
-        this.accessTokenConverter = accessTokenConverter;
-        this.tokenStore = tokenStore;
-        this.authenticationManager = authenticationManager;
-    }
+	@Value("${oauth.client.secret}")
+	private String clientSecret;
 
-    @Override
-    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
-    }
+	private final BCryptPasswordEncoder passwordEncoder;
+	private final JwtAccessTokenConverter accessTokenConverter;
+	private final JwtTokenStore tokenStore;
+	private final AuthenticationManager authenticationManager;
 
-    @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.inMemory()
-                .withClient("myappname123")
-                .secret(passwordEncoder.encode("myappsecret123"))
-                .scopes("read", "write")
-                .authorizedGrantTypes("password")
-                .accessTokenValiditySeconds(86400);
-    }
+	public AuthorizationServerConfig(BCryptPasswordEncoder passwordEncoder, JwtAccessTokenConverter accessTokenConverter, JwtTokenStore tokenStore, AuthenticationManager authenticationManager) {
+		this.passwordEncoder = passwordEncoder;
+		this.accessTokenConverter = accessTokenConverter;
+		this.tokenStore = tokenStore;
+		this.authenticationManager = authenticationManager;
+	}
 
-    @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.authenticationManager(authenticationManager).tokenStore(tokenStore).accessTokenConverter(accessTokenConverter);
-    }
+	@Override
+	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+		security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
+	}
+
+	@Override
+	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+		clients.inMemory()
+		.withClient(clientName)
+		.secret(passwordEncoder.encode(clientSecret))
+		.scopes("read", "write")
+		.authorizedGrantTypes("password")
+		.accessTokenValiditySeconds(86400);
+	}
+
+	@Override
+	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+		endpoints.authenticationManager(authenticationManager)
+		.tokenStore(tokenStore)
+		.accessTokenConverter(accessTokenConverter);
+	}
 }
